@@ -1,0 +1,5 @@
+ackerman(0,N,X) :- X is N + 1. 
+ackerman(M,0,X) :- M > 0, T is M-1, ackerman(T,1,X). 
+ackerman(M,N,X) :- M>0, N>0, T is M-1, V is N-1,  
+    				       ackerman(M,V,X1), 
+    				       ackerman(T,X1,X). 
