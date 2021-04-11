@@ -1,0 +1,4 @@
+ano(N,bulukulu):- N mod 55 =:= 0, ano(N,bissexto). 
+ano(N,bissexto):- N mod 400 =:= 0 ; N mod 4 =:= 0, N mod 100 \== 0. 
+ano(N,huluculu):- N mod 15 =:= 0. 
+ano(N,usual). 
