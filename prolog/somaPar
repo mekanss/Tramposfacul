@@ -1,0 +1,17 @@
+par(N):- N mod 2 =:= 0. 
+
+somaPar(N,X) :- N < 10, par(N), X is N, !; 
+
+    		    N < 10, X is 0, !. 
+
+somaPar(N,X) :- T is N mod 10, 
+
+		Y is N//10, 
+
+		somaPar(Y,R), 
+
+		par(T), 
+
+		X is T+R,!; 
+
+		Y is N//10, somaPar(Y,X). 
