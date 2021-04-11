@@ -1,0 +1,5 @@
+divisivel(X) :- X =:= 7; 
+    		X > 7, 
+    		T is 2*(X mod 10), 
+    		N is X//10, R is N - T, 
+   		  divisivel(R). 
