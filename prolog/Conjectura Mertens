@@ -1,0 +1,19 @@
+fatorial(1,[]) :-
+   true, !.
+
+fatorial(X,[F1|T]) :-
+   X > 0,
+   between(2,X,F1), 
+   X1 is X // F1, (X mod F1) =:= 0,
+   fatorial(X1,T), !.
+
+paridade(Num,Par) :- Num mod 2 =:= 0, Par is 1;
+    				 Num mod 2 =\= 0, Par is -1.
+
+verifica([H,H|_],Y) :- Y is 0.
+verifica([_,T|V],Y) :- verifica([T|V],Y).
+
+verificar(Lista,Y) :- length(Lista,Tamanho), paridade(Tamanho,Y).
+
+mu(Z,Y) :- fatorial(Z,Lista), verifica(Lista,Y),!;
+    		fatorial(Z,Lista), verificar(Lista,Y),!.
