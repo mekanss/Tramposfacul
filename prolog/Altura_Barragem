@@ -1,0 +1,45 @@
+inserir([],_,_). %regra para inserir elemento em determinada lista
+inserir(X,[],[X]).
+inserir(X, [H|T], R):-
+    R = [X,H|T].
+inserir(X, [H|T], R):-
+    inserir(X,T,NT),
+    R = [H|NT].
+
+soma([_|[]],Resultado) :- %quando chega no fim dos pares
+     write(Resultado),
+     !.
+soma([Prim,Seg|Rest],Pares) :- %regra que insere as ''pilastras'' como pares
+    inserir(Seg,[Prim],Par),
+    inserir(Par,Pares,Resultado),
+    soma([Seg|Rest],Resultado).
+
+barragem([Z,X,Y], Res) :- %quando esta proximo do fim da lista
+    Z > X,
+    Z > Y,
+    soma(Res,_),
+    !;
+    X > Y,
+    X > Z,
+    inserir(X,Res,Result),
+    soma(Result,_),
+    !;
+	Y > Z,
+    Y > X,
+    inserir(X,Res,Result),
+    soma(Result,_),
+    !.
+
+
+
+barragem([Esq,Meio,Dir|R],Res) :- %regra que detecta pilastras
+    Meio > Esq,
+    Meio > Dir,
+    inserir(Meio,Res,Result), %insere as pilastras em uma lista
+    barragem([Meio,Dir|R],Result).
+
+barragem([Esq,Meio,Dir|R],Res) :-
+    Meio =< Esq,
+    barragem([Meio,Dir|R],Res);
+    Meio < Dir,
+    barragem([Meio,Dir|R],Res).
