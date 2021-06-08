@@ -1,0 +1,21 @@
+intercala(Lista,Res) :-
+    append(Lista,Oord), %Append q vai gerar uma lista com os membros da lista original
+    ordenar(Oord,Res),!. %Regra q vai ordernar a lista com todos os membros
+
+ordenar([], []). %Caso base
+ordenar(L, R) :-  
+    check(L, M, Rem), %regra q vai pegar o minimo da lista (M) e
+    ordenar(Rem, T2),  %fazer recursao com o Resto dela (Rem) 
+    R = [M|T2].
+
+check([H], H, []). %Se a lista tem 1 elemento, o minimo e ele propio
+check([H|T], M, R) :- %HT e a lista, M vai ser o minimo e R o resto dela
+    check(T, M2, R2), %Nesse caso, o Head nao é o menor da lista
+    M2 =< H, M = M2, 
+    R = [H | R2].
+
+check([H|T], M, R) :-  %Nesse caso o Head é o menor da lista
+    check(T, M2, R2),
+    M2 > H,
+    M = H,
+    R = [M2 | R2].
