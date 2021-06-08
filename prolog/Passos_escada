@@ -1,0 +1,39 @@
+fib_seq(0,[0]).                  %regra que calcula a sequencia de fibonnaci, que vai ser usada
+fib_seq(1,[0,1]).                 
+fib_seq(N,Seq) :-
+   N > 1,
+   fib_seq_(N,SeqR,1,[1,0]),     
+   reverse(SeqR,Seq).             
+
+fib_seq_(N,Seq,N,Seq).
+fib_seq_(N,Seq,N0,[B,A|Fs]) :-
+   N > N0,
+   N1 is N0+1,
+   C is A+B,
+   fib_seq_(N,Seq,N1,[C,B,A|Fs]).
+
+soma(Passos,PassoAtu,_,Res,_,Y) :- %Regra que limita o numero de recursoes, (Se o numero de passos for maior)
+    PassoAtu >= Passos,
+    Res is Y,
+    !.
+
+
+soma(Passos,PassoAtu,Temp,Res,Seq,Y) :- %Regra q calcula quando o numero de passos for maior que 2
+    Passos > PassoAtu,                  %por ex (1,2,3), primeiro checa se o numero de passos(total) e maior q o atual
+    PassoAtu1 is PassoAtu + 1,          %soma pela recursao
+    TamanhoP is Temp-1,                 %parte da formula An(solucao)= A(n-1) + A(n-2)... A(n-z) sendo z
+    nth0(TamanhoP,Seq,X),               %o numero de passos diferentes
+    Z is X + Y,
+    soma(Passos,PassoAtu1,TamanhoP,Res,Seq,Z).
+
+    
+
+solucao(_,1,Res) :- Res is 1, !.
+solucao(Degraus,2,Res) :- Temp is Degraus+1, fib_seq(Temp,Seq), Temp1 is Temp-1,   %caso com tamanho 1 e 2, mais simples
+    					  Temp2 is Temp-2, nth0(Temp1,Seq,X), nth0(Temp2,Seq,Y),
+    					  Res is X + Y,!.
+
+solucao(Degraus,Passos,Res) :- Temp is Degraus+1, fib_seq(Temp,Seq),       %Degraus é até qual degraus q deseja descobrir
+    							soma(Passos,0,Temp,Res,Seq,0),  %passos é ate quais passos a pessoa anda
+    							!.                 %por ex (1,2,3) seria passos 3, (1,2) seria 2
+    
