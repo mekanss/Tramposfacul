@@ -1,0 +1,8 @@
+dias m
+  | m == 2 = 28
+  | m == 5 || m == 3 || m == 8 || m == 12 = 31
+  | m == 1 || m == 10 = 29
+  | otherwise = 30
+
+main = do
+  print(dias 2)
