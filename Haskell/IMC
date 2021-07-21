@@ -1,0 +1,7 @@
+imc x y
+  | (x/(y^2)) < 18.5 = "Baixo"
+  | (x/(y^2)) > 30 = "Alto"
+  | otherwise = "Normal"
+
+main = do
+  print(imc 180 1.72)
