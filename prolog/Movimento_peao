@@ -1,0 +1,55 @@
+posDif([L2,C2],[L4,C4]) :-
+    L2 =\= L4;
+    C2 =\= C4.
+
+peaoMov([1,C1],[L2,C2]) :-
+    L2 is 1,
+    C2 is C1.
+
+peaoMov([7,C1],[L2,C2]) :-
+    L2 is 7-2,
+    C2 is C1,!;
+    L2 is 7-1,
+    C2 is C1.
+
+peaoMov([L1,C1],[L2,C2]) :-
+    L2 is L1-1,
+    C2 is C1.
+
+peaoCome([L1,C1],[L2,C2],[[H,T]|Z]) :-
+    H is L1 - 1,
+	T is C1 + 1,
+    L2 is H,
+	C2 is T,!;
+	H is L1 - 1,
+    T is C1 - 1,
+	L2 is H,
+    C2 is T,!;
+    peaoCome([L1,C1],[L2,C2],Z).
+
+
+
+peao([L1,C1],[L2,C2],Inimigo,Aliado) :-
+    peaoCome([L1,C1],[L2,C2],Inimigo),!;
+    peaoMov([L1,C1],[L2,C2]),
+    checaPeca([L2,C2],Aliado),
+    checaPeca([L2,C2],Inimigo).
+
+
+checaPeca([L2,C2],[[H,T]|Z]) :-
+    posDif([L2,C2],[H,T]),
+    checaPeca([L2,C2],Z).
+
+checaPeca([_,_],[]).
+
+jogo(H,H,_,_) :-
+    member([1,_],H),!.
+
+jogo([H|T],Res,Inimigo,Aliado) :-
+    peao(H,Prox,Inimigo,Aliado),
+    jogo([Prox,H|T],Res,Inimigo,Aliado).
+
+
+
+
+
