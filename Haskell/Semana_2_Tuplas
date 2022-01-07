@@ -1,0 +1,142 @@
+module Exercise where
+
+-- Defina as seguintes funções usando tuplas. Inclua os tipos para todas as funções definidas.
+
+{-
+Convencionemos que uma carta de baralho é uma tupla em que 
+ - o primeiro elemento é o valor da carta (1,2,3,4,5,6,7,8,9,10,11,12,13)
+ - o segundo é o naipe ("ouro", "copas", "espada", "paus").
+-}
+
+{-
+Uma função que receba uma carta retorne seu naipe.
+Entrada:
+    - c1: carta
+Resultado: naipe da carta
+-}
+
+naipe :: (Int,String) -> String
+naipe (n1,na1) = na1
+
+
+{-
+Uma função que receba uma carta retorne seu valor.
+Entrada:
+    - c1: carta
+Resultado: valor da carta
+-}
+
+naipe :: (Int,String) -> Int
+naipe (n1,na1) = n1
+
+
+
+{-
+Uma função que receba duas cartas e diga se a primeira é menor que a segunda.
+Uma carta c1 é menor que uma carta c2 se valor c1 < valor2 OU se valor c1 == valor c2 e naipe c1 < c2.
+"copas" < "espada" < "ouro" < "paus"
+Entrada:
+    - c1, c2: cartas
+Resultado: True ou False
+-}
+
+cartaÉMenor :: (Int,String) -> (Int,String) -> Bool
+cartaÉMenor (n1,na1) (n2,na2)
+  | n1 > n2 = False
+  | n1 == n2 && na1 == "paus" && na2 /= "paus" = False
+  | n1 == n2 && na1 == "ouro" && na2 /= "paus" && na2 /= "ouro" = False
+  | n1 == n2 && na1 == "espada" && na2 /= "paus" && na2 /= "ouro" && na2 /= "espada" = False
+  | otherwise = True
+
+{-
+Uma função que receba duas cartas e diga se a primeira é igual à segunda.
+Entrada:
+    - c1, c2: cartas
+Resultado: True ou False
+-}
+
+cartaÉIgual :: (Int,String) -> (Int,String) -> Bool
+cartaÉIgual (n1,na1) (n2,na2)
+  | n1 == n2 && na1 == na2 = True
+  | otherwise = False
+
+
+{-
+Uma função que receba duas cartas e diga se a primeira é maior que a segunda.
+Entrada:
+    - c1, c2: cartas
+Resultado: True ou False
+-}
+
+cartaÉMaior :: (Int,String) -> (Int,String) -> Bool
+cartaÉMaior (n1,na1) (n2,na2)
+  | n1 > n2 = True
+  | n1 == n2 && na1 == "paus" && na2 /= "paus" = True
+  | n1 == n2 && na1 == "ouro" && na2 /= "paus" && na2 /= "ouro" = True
+  | n1 == n2 && na1 == "espada" && na2 /= "paus" && na2 /= "ouro" && na2 /= "espada" = True
+  | otherwise = False
+
+
+{-
+Uma função que recebe 3 cartas c1 c2 c3 e retorne uma tripla com c2 c2 e c3, em ordem decrescente.
+-}
+
+
+ordenaCartas :: (Int,String) -> (Int,String) -> (Int,String) -> ((Int,String),(Int,String),(Int,String))
+ordenaCartas (n1,na1) (n2,na2) (n3,na3)
+  | n1 > n2 && n2 > n3 = ((n1,na1),(n2,na2),(n3,na3))
+  | n1 > n2 && n3 > n2 = ((n1,na1),(n3,na3),(n2,na2))
+  | n1 < n2 && n1 > n3 = ((n2,na2),(n1,na1),(n3,na3))
+  | n1 < n2 && n1 < n3 = ((n2,na2),(n3,na3),(n1,na1))
+  | n2 > n1 = ((n3,na3),(n2,na2),(n1,na1))
+  | otherwise = ((n3,na3),(n1,na1),(n2,na2))
+
+
+{-
+Uma função que receba uma tupla de 3 cartas, m1 m2 m3, ordenadas de forma decrescente, e diga se formam um jogo, onde,
+m1 m2 e m3 formam um jogo se e somente se
+    - OU naipe m1 == naipe m2 == naipe m3 E valor m1 == valor m2 + 1 == valor m3 + 2
+    - OU naipe m1 =/= naipe m2 =/= naipe m3 =/= m1 E valor m1 == valor m2 == valor m3
+Entrada:
+    - (m1, m2, m3): cartas
+Resultado: True ou False
+-}
+
+éJogo :: (Int,String) -> (Int,String) -> (Int,String) -> Bool
+éJogo (n1,na1) (n2,na2) (n3,na3)
+  | na1 == na2 && na2 == na3 && n1 == n2 + 1 && n2 == n3 + 1 = True
+  | na1 /= na2 && na2 /= na3 && n1 == n2 && n2 == n3 = True 
+  | otherwise = False
+
+{-
+Defina uma função que receba duas tuplas de 3 cartas ordenadas de forma decrescente, compare as tuplas, e retorne a maior dentre as duas tuplas.
+Uma tupla t1 é menor que uma tupla t2 se e somente se
+- a primeira carta de t1 é menor que a primeira de t2 OU
+- as primeiras cartas são iguais mas a segunda carta de t1 é menor que a segunda de t2
+- as primeiras e segundas cartas são iguais mas a terceira carta de t1 é menor que a terceira de t2
+-}
+
+maiorMão :: ((Int,String),(Int,String),(Int,String)) -> ((Int,String),(Int,String),(Int,String)) -> ((Int,String),(Int,String),(Int,String))
+maiorMão ((n1,na1),(n2,na2),(n3,na3)) ((n4,na4),(n5,na5),(n6,na6))
+  | n1 < n4 = ((n4,na4),(n5,na5),(n6,na6))
+  | n1 == n4 && n2 < n5 = ((n4,na4),(n5,na5),(n6,na6))
+  | n1 == n4 && n2 == n5 && n3 < n6 = ((n4,na4),(n5,na5),(n6,na6))
+  | otherwise = ((n1,na1),(n2,na2),(n3,na3))
+
+
+{-
+Defina uma função que receba duas tuplas de 3 cartas ordenadas de forma decrescente, e compare as tuplas para dizer qual ganha, ou se houve empate.
+Uma tupla t1 ganha de uma tupla t2 se 
+- t1 é um jogo mas t2 não é um jogo
+- t1 e t2 são um jogo mas t1 é maior que t2.
+- se nenhuma é jogo e t1 é maior que t2
+- No caso de empate, retorne a tupla ((0,""),(0,""),(0,""))
+-}
+
+mãoGanhadora :: ((Int,String),(Int,String),(Int,String)) -> ((Int,String),(Int,String),(Int,String)) -> ((Int,String),(Int,String),(Int,String))
+mãoGanhadora ((n1,na1),(n2,na2),(n3,na3)) ((n4,na4),(n5,na5),(n6,na6))
+  | éJogo (n1,na1) (n2,na2) (n3,na3) && not (éJogo (n4,na4) (n5,na5) (n6,na6)) = ((n1,na1),(n2,na2),(n3,na3)) 
+  | éJogo (n1,na1) (n2,na2) (n3,na3) && éJogo (n4,na4) (n5,na5) (n6,na6) && (maiorMão ((n1,na1),(n2,na2),(n3,na3)) ((n4,na4),(n5,na5),(n6,na6)) == ((n1,na1),(n2,na2),(n3,na3))) = ((n1,na1),(n2,na2),(n3,na3)) 
+  | maiorMão ((n1,na1),(n2,na2),(n3,na3)) ((n4,na4),(n5,na5),(n6,na6)) == ((n1,na1),(n2,na2),(n3,na3)) = ((n1,na1),(n2,na2),(n3,na3)) 
+  | n1 == n4 && n2 == n5 && n3 == n6 = ((0,""),(0,""),(0,""))
+  | otherwise = ((n4,na4),(n5,na5),(n6,na6))
