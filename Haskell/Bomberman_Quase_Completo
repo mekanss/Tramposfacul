@@ -1,0 +1,265 @@
+data Comando = UP | DOWN | RIGHT | LEFT | WAIT | BOMBA | ARREMESSO
+data Celula = Grama | Presente_Patins | Buraco | Presente_Arremesso| Vazio | Bomba | Bomba2 | Bomba3 | Parede | Pedra | Jogador Int (Int,Int) (Int,Int) | JogadorBomba Int (Int,Int) (Int,Int) deriving (Eq,Show)
+type Linha = [Celula]
+type Tabuleiro = [Linha]
+
+-- Função que verifica dada celula, e decide oq irá fazer com ela
+atualizacampo :: Tabuleiro -> (Int,Int) -> Tabuleiro
+atualizacampo campo (x,y) = case conteudo of
+  Grama -> campo
+  JogadorBomba _ (_,_) (_,_) -> campo
+  Parede -> campo
+  Pedra -> campo
+  Buraco -> campo
+  Presente_Arremesso -> campo
+  Presente_Patins  -> campo
+  Bomba -> trocaCelula campo Bomba2 (x,y)
+  Bomba2 -> trocaCelula campo Bomba3 (x,y)
+  Bomba3 -> trocaCelula (coordenadaBomba campo (x,y)) Grama (x,y)
+  Jogador _ (_,_) (_,_) -> campo
+  where
+    conteudo = verificaPos (x,y) campo
+
+-- Funcao que envia os quadrados a serem destruidos
+coordenadaBomba :: Tabuleiro -> (Int,Int) -> Tabuleiro
+coordenadaBomba campo (x,y) =  estouraBomba (estouraBomba(estouraBomba (estouraBomba (estouraBomba campo (x,y)) (x+1,y)) (x-1,y)) (x,y+1)) (x,y-1)
+
+
+-- Função que ira verificar se pode destruir os quadrados delimitados pela coordenada bomba
+estouraBomba :: Tabuleiro -> (Int,Int) -> Tabuleiro
+estouraBomba campo (x,y) = case conteudo of
+  Grama -> campo
+  Parede -> campo
+  Pedra -> trocaCelula campo Grama (x,y)
+  Buraco -> campo
+  Presente_Arremesso -> trocaCelula campo Grama (x,y)
+  Presente_Patins -> trocaCelula campo Grama (x,y)
+  Jogador _ (_,_) (_,_) -> trocaCelula campo Grama (x,y)
+  Bomba -> campo
+  Bomba2 -> campo
+  Bomba3 -> campo
+  where
+    conteudo = verificaPos (x,y) campo
+
+-- Função que varre o tabuleiro, nota, o tabuleiro vai de 0 à x, entao se ele é (2,2) tem 9 elementos
+atualizaTudo :: Tabuleiro -> (Int,Int) -> Tabuleiro
+atualizaTudo campo (7,7) = atualizacampo campo (7,7)
+atualizaTudo campo (7,y) = atualizaTudo (atualizacampo campo (7,y)) (0,y+1)
+atualizaTudo campo (x,y) = atualizaTudo (atualizacampo campo (x,y)) (x+1,y)
+
+-- Coloca celula em determinada coordenada
+trocaCelula :: Tabuleiro -> Celula -> (Int, Int) -> Tabuleiro
+trocaCelula m x (r,c)
+  | r < 0 = m
+  | c < 0 = m
+  | r > 7 = m
+  | c > 7 = m
+  | otherwise = 
+  take r m ++
+  [take c (m !! r) ++ [x] ++ drop (c + 1) (m !! r)] ++
+  drop (r + 1) m
+
+
+
+-- Descobre oq tem em dada coordenada
+verificaPos :: (Int,Int) -> Tabuleiro -> Celula
+verificaPos (x,y) campo
+  | x < 0 = Vazio
+  | y < 0 = Vazio
+  | otherwise = lista!!(y)
+  where lista = campo!!(x)
+
+-- Adiciona os presentes na função do jogador
+adicionaPresente :: Celula -> Celula -> Celula
+adicionaPresente (Jogador x (z,y) (c,v)) Presente_Patins = Jogador x (z,y) (1,v)
+adicionaPresente (Jogador x (z,y) (c,v)) Presente_Arremesso = Jogador x (z,y) (c,v+1)
+
+-- Atualiza a coordenada do player
+atualizaCoordenada :: Celula -> (Int,Int) -> Celula
+atualizaCoordenada (Jogador n (x,y) (c,v)) (xN,yN) = Jogador n (xN,yN) (c,v) 
+
+-- Transforma o player em playerbomba
+transformaBomba :: Celula -> Celula
+transformaBomba (Jogador n (x,y) (c,v)) = JogadorBomba n (x,y) (c,v)
+
+
+
+-- Move player para onde estava Grama, e coloca uma grama onde ele estava
+
+
+atualizaPlayer :: Tabuleiro -> (Int,Int) -> (Int,Int) -> Celula -> Tabuleiro
+atualizaPlayer campo (x,y) (xN,yN) Grama = case (verificaPos (x,y) campo) of
+  Jogador _ (_,_) (_,_) -> take x campoz ++ [take y (campoz!!x) ++ [Grama] ++ drop (y+1) (campoz!!x)] ++ drop (x + 1) campoz
+  JogadorBomba n (_,_) (c,v) -> trocaCelula (trocaCelula campo Bomba (x,y)) (Jogador n (xN,yN) (c,v)) (xN,yN)
+  where campoz = take xN campo ++ [take yN (campo!!xN) ++ [atualizaCoordenada (verificaPos (x,y) campo) (xN,yN)] ++ drop (yN+1) (campo!!xN)] ++ drop (xN + 1) campo
+
+
+
+
+-- Move player para onde estava PresentePatins, e coloca uma grama onde ele estava
+atualizaPlayer campo (x,y) (xN,yN) Presente_Patins = case (verificaPos (x,y) campo) of
+  Jogador _ (_,_) (_,_) -> take x campoz ++ [take y (campoz!!x) ++ [Grama] ++ drop (y+1) (campoz!!x)] ++ drop (x + 1) campoz
+  JogadorBomba n (_,_) (c,v) -> trocaCelula (trocaCelula campo Bomba (x,y)) (Jogador n (xN,yN) (1,v)) (xN,yN)
+  where campoz = take xN campo ++ [take yN (campo!!xN) ++ [adicionaPresente (verificaPos (x,y) campo) Presente_Patins] ++ drop (yN+1) (campo!!xN)] ++ drop (xN + 1) campo
+
+-- Move player para onde estava PresenteArremesso, e coloca uma grama onde ele estava
+atualizaPlayer campo (x,y) (xN,yN) Presente_Arremesso =
+  case (verificaPos (x,y) campo) of
+  Jogador _ (_,_) (_,_) -> take x campoz ++ [take y (campoz!!x) ++ [Grama] ++ drop (y+1) (campoz!!x)] ++ drop (x + 1) campoz
+  JogadorBomba n (_,_) (c,v) ->  trocaCelula (trocaCelula campo Bomba (x,y)) (Jogador n (xN,yN) (c,v+1)) (xN,yN)
+  where campoz = take xN campo ++ [take yN (campo!!xN) ++ [adicionaPresente (verificaPos (x,y) campo) Presente_Arremesso] ++ drop (yN+1) (campo!!xN)] ++ drop (xN + 1) campo
+
+
+arremessaBomba :: Tabuleiro -> (Int,Int) -> Tabuleiro
+arremessaBomba campo (x,y) = jogaBomba(jogaBomba(jogaBomba (jogaBomba campo (x-1,y) player) (x+1,y) player) (x,y-1) player) (x,y+1) player
+  where
+    player = verificaPos (x,y) campo
+
+jogaBomba :: Tabuleiro -> (Int,Int) -> Celula -> Tabuleiro
+jogaBomba campo (xN,yN) (Jogador n (x,y) (c,v)) = case  conteudo of
+  Vazio -> campo
+  Grama -> campo
+  Parede -> campo
+  Pedra -> campo
+  Buraco -> campo
+  Presente_Arremesso -> campo
+  Presente_Patins -> campo
+  Jogador _ (_,_) (_,_) -> campo
+  Bomba -> arremesso campo (xN,yN) (x,y) v Bomba
+  Bomba2 -> arremesso campo (xN,yN) (x,y) v Bomba2
+  Bomba3 -> arremesso campo (xN,yN) (x,y) v Bomba3
+  where
+    conteudo = verificaPos (xN,yN) campo
+
+arremesso :: Tabuleiro -> (Int,Int) -> (Int,Int) -> Int -> Celula -> Tabuleiro
+arremesso campo (xN,yN) (x,y) v bombs
+  | xN == x && yN < y = trocaCelula (trocaCelula campo Grama (xN,yN)) bombs (xN,yN-v)
+  | xN == x && yN > y = trocaCelula (trocaCelula campo Grama (xN,yN)) bombs (xN,yN+v)
+  | yN == y && xN < x = trocaCelula (trocaCelula campo Grama (xN,yN)) bombs (xN-v,yN)
+  | yN == y && xN > x = trocaCelula (trocaCelula campo Grama (xN,yN)) bombs (xN+v,yN)  
+
+
+
+
+jogo :: Tabuleiro -> Comando -> (Int,Int) -> Tabuleiro
+
+jogo campo ARREMESSO (x,y) = case conteudo of
+  Jogador _ (_,_) (c,0) -> atualizaTudo campo (0,0)
+  Jogador _ (_,_) (c,v) -> atualizaTudo (arremessaBomba campo (x,y)) (0,0)
+  where
+    conteudo = verificaPos (x,y) campo
+
+
+
+
+-- Soltando bomba
+jogo campo BOMBA (x,y) = atualizaTudo (trocaCelula campo player (x,y)) (0,0)
+  where player = transformaBomba (verificaPos (x,y) campo)
+
+-- Se o jogador se mover nos cantos
+jogo campo UP (0,_) = atualizaTudo campo (0,0)
+jogo campo DOWN (7,_) = atualizaTudo campo (0,0)
+jogo campo LEFT (_,0) = atualizaTudo campo (0,0)
+jogo campo RIGHT (_,7) = atualizaTudo campo (0,0)
+
+-- Movimentos
+jogo campo RIGHT (x,y) = case verificaPos (x,y+1) campo of
+  Parede -> atualizaTudo campo (0,0)
+  Jogador _ (_,_) (_,_) -> atualizaTudo campo (0,0)
+  Pedra -> atualizaTudo campo (0,0)
+  Bomba -> atualizaTudo campo (0,0)  
+  Bomba2 -> atualizaTudo campo (0,0)
+  Bomba3 -> atualizaTudo campo (0,0)                                                                     
+  Buraco -> atualizaTudo (trocaCelula campo Grama (x,y)) (0,0)                                                                     
+  Presente_Patins -> atualizaTudo (atualizaPlayer campo (x,y) (x,y+1) Presente_Patins) (0,0)       
+  Presente_Arremesso -> atualizaTudo (atualizaPlayer campo (x,y) (x,y+1) Presente_Arremesso) (0,0)
+  Grama -> atualizaTudo (atualizaPlayer campo (x,y) (x,y+1) Grama) (0,0)     
+
+jogo campo UP (x,y) = case verificaPos (x-1,y) campo of
+  Parede -> atualizaTudo campo (0,0)
+  Jogador _ (_,_) (_,_) -> atualizaTudo campo (0,0)
+  Pedra -> atualizaTudo campo (0,0)
+  Bomba -> atualizaTudo campo (0,0)   
+  Bomba2 -> atualizaTudo campo (0,0)
+  Bomba3 -> atualizaTudo campo (0,0)                                                                    
+  Buraco -> atualizaTudo (trocaCelula campo Grama (x,y)) (0,0)                                                                     
+  Presente_Patins -> atualizaTudo (atualizaPlayer campo (x,y) (x-1,y) Presente_Patins) (0,0)       
+  Presente_Arremesso -> atualizaTudo (atualizaPlayer campo (x,y) (x-1,y) Presente_Arremesso) (0,0)
+  Grama -> atualizaTudo (atualizaPlayer campo (x,y) (x-1,y) Grama) (0,0)  
+
+jogo campo LEFT (x,y) = case verificaPos (x,y-1) campo of
+  Parede -> atualizaTudo campo (0,0)
+  Jogador _ (_,_) (_,_) -> atualizaTudo campo (0,0)
+  Pedra -> atualizaTudo campo (0,0)
+  Bomba -> atualizaTudo campo (0,0)    
+  Bomba2 -> atualizaTudo campo (0,0)
+  Bomba3 -> atualizaTudo campo (0,0)                                                                   
+  Buraco -> atualizaTudo (trocaCelula campo Grama (x,y)) (0,0)                                                                     
+  Presente_Patins -> atualizaTudo (atualizaPlayer campo (x,y) (x,y-1) Presente_Patins) (0,0)       
+  Presente_Arremesso -> atualizaTudo (atualizaPlayer campo (x,y) (x,y-1) Presente_Arremesso) (0,0)
+  Grama -> atualizaTudo (atualizaPlayer campo (x,y) (x,y-1) Grama) (0,0)    
+
+jogo campo DOWN (x,y) = case verificaPos (x+1,y) campo of
+  Parede -> atualizaTudo campo (0,0)
+  Jogador _ (_,_) (_,_) -> atualizaTudo campo (0,0)
+  Pedra -> atualizaTudo campo (0,0)
+  Bomba -> atualizaTudo campo (0,0)
+  Bomba2 -> atualizaTudo campo (0,0)
+  Bomba3 -> atualizaTudo campo (0,0)                                                                      
+  Buraco -> atualizaTudo (trocaCelula campo Grama (x,y)) (0,0)                                                                     
+  Presente_Patins -> atualizaTudo (atualizaPlayer campo (x,y) (x+1,y) Presente_Patins) (0,0)       
+  Presente_Arremesso -> atualizaTudo (atualizaPlayer campo (x,y) (x+1,y) Presente_Arremesso) (0,0)
+  Grama -> atualizaTudo (atualizaPlayer campo (x,y) (x+1,y) Grama) (0,0)   
+
+
+
+
+
+-- Impressão
+
+imprimeTudo campo (7,7) = imprime campo (7,7)
+
+imprimeTudo campo (x,7) = imprime campo (x,7) ++ "\n" ++ imprimeTudo campo (x+1,0)
+
+imprimeTudo campo (x,y) = imprime campo (x,y) ++ " " ++ imprimeTudo campo (x,y+1)
+
+imprime campo (x,y) = case (verificaPos (x,y) campo) of
+  Jogador n (_,_) (_,_) -> "J" ++ (show n)
+  Grama -> "G "
+  Pedra -> "p "
+  Parede -> "||"
+  Bomba -> "B1"
+  Bomba2 -> "B2"
+  Bomba3 -> "B3"
+  JogadorBomba n (_,_) (_,_) -> "JB" ++ (show n)
+  Buraco -> "b "
+  Presente_Patins -> "Pp"
+  Presente_Arremesso -> "Pa"
+
+-- Main
+
+
+main :: IO ()
+main = do
+    loopPrincipal tabuleiro (1,1)
+
+tabuleiro = [[Parede,Parede,Parede,Parede,Parede,Parede,Parede,Parede], 
+              [Parede,Jogador 1 (1,1) (1,1),Bomba2,Pedra,Grama,Grama,Grama,Parede], 
+                [Parede,Grama,Pedra,Grama,Bomba2,Pedra,Grama,Parede],
+                  [Parede,Grama,Pedra,Grama,Grama,Pedra,Grama,Parede],
+                    [Parede,Grama,Pedra,Grama,Pedra,Grama,Grama,Parede],
+                      [Parede,Grama,Pedra,Grama,Grama,Pedra,Grama,Parede],
+                        [Parede,Grama,Grama,Grama,Pedra,Grama,Pedra,Parede],
+                          [Parede,Parede,Parede,Parede,Parede,Parede,Parede,Parede]]
+
+loopPrincipal :: Tabuleiro -> (Int,Int) -> IO ()
+loopPrincipal t (x,y) = do
+    putStrLn (imprimeTudo tabuleiro (0,0))
+    op <- getLine 
+    case op of
+      "e" -> putStrLn (imprimeTudo (jogo tabuleiro ARREMESSO (x,y)) (0,0))
+      "w" -> putStrLn (imprimeTudo (jogo tabuleiro UP (x,y)) (0,0))
+      "s"-> putStrLn (imprimeTudo (jogo tabuleiro DOWN (x,y)) (0,0))
+      "a" -> putStrLn (imprimeTudo (jogo tabuleiro LEFT (x,y)) (0,0))
+      "d" -> putStrLn (imprimeTudo (jogo tabuleiro RIGHT (x,y)) (0,0))
+      "q" -> putStrLn (imprimeTudo (jogo tabuleiro BOMBA (x,y)) (0,0))
