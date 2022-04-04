@@ -224,27 +224,28 @@ imprimeTudo campo (x,7) = imprime campo (x,7) ++ "\n" ++ imprimeTudo campo (x+1,
 imprimeTudo campo (x,y) = imprime campo (x,y) ++ " " ++ imprimeTudo campo (x,y+1)
 
 imprime campo (x,y) = case (verificaPos (x,y) campo) of
-  Jogador n (_,_) (_,_) -> "J" ++ (show n)
-  Grama -> "G "
-  Pedra -> "p "
-  Parede -> "||"
-  Bomba -> "B1"
-  Bomba2 -> "B2"
-  Bomba3 -> "B3"
+  Jogador n (_,_) (_,_) -> "J" ++ (show n) ++ " "
+  Grama -> "~  "
+  Pedra -> "#  "
+  Parede -> "|| "
+  Bomba -> "B1 "
+  Bomba2 -> "B2 "
+  Bomba3 -> "B3 "
   JogadorBomba n (_,_) (_,_) -> "JB" ++ (show n)
-  Buraco -> "b "
-  Presente_Patins -> "Pp"
-  Presente_Arremesso -> "Pa"
+  Buraco -> "O  "
+  Presente_Patins -> "Pp "
+  Presente_Arremesso -> "Pa "
 
 -- Main
 
 
 main :: IO ()
 main = do
+    putStrLn "Aperte W para cima, S para baixo\nD para direita, A para esquerda\nQ coloca bomba, por fim E arremessa bombas proximas"
     loopPrincipal tabuleiro (1,1)
 
 tabuleiro = [[Parede,Parede,Parede,Parede,Parede,Parede,Parede,Parede], 
-              [Parede,Jogador 1 (1,1) (1,1),Bomba2,Pedra,Grama,Grama,Grama,Parede], 
+              [Parede,Jogador 1 (1,1) (1,1),Bomba2,Pedra,Grama,Buraco,Grama,Parede], 
                 [Parede,Grama,Pedra,Grama,Bomba2,Pedra,Grama,Parede],
                   [Parede,Grama,Pedra,Grama,Grama,Pedra,Grama,Parede],
                     [Parede,Grama,Pedra,Grama,Pedra,Grama,Grama,Parede],
@@ -254,12 +255,13 @@ tabuleiro = [[Parede,Parede,Parede,Parede,Parede,Parede,Parede,Parede],
 
 loopPrincipal :: Tabuleiro -> (Int,Int) -> IO ()
 loopPrincipal t (x,y) = do
-    putStrLn (imprimeTudo tabuleiro (0,0))
+    putStrLn (imprimeTudo t (0,0))
     op <- getLine 
     case op of
-      "e" -> putStrLn (imprimeTudo (jogo tabuleiro ARREMESSO (x,y)) (0,0))
-      "w" -> putStrLn (imprimeTudo (jogo tabuleiro UP (x,y)) (0,0))
-      "s"-> putStrLn (imprimeTudo (jogo tabuleiro DOWN (x,y)) (0,0))
-      "a" -> putStrLn (imprimeTudo (jogo tabuleiro LEFT (x,y)) (0,0))
-      "d" -> putStrLn (imprimeTudo (jogo tabuleiro RIGHT (x,y)) (0,0))
-      "q" -> putStrLn (imprimeTudo (jogo tabuleiro BOMBA (x,y)) (0,0))
+      "e" -> let t' = (jogo t ARREMESSO (x,y)) in loopPrincipal t' (x,y)
+      "w" -> let t' = (jogo t UP (x,y)) in loopPrincipal t' (x-1,y)
+      "s"-> let t' = (jogo t DOWN (x,y)) in loopPrincipal t' (x+1,y)
+      "a" -> let t' = (jogo t LEFT (x,y)) in loopPrincipal t' (x,y-1)
+      "d" -> let t' = (jogo t RIGHT (x,y)) in loopPrincipal t' (x,y+1)
+      "q" -> let t' = (jogo t BOMBA (x,y)) in loopPrincipal t' (x,y)
+      _ -> putStrLn "\nTecla invalida"
