@@ -1,0 +1,29 @@
+# depslib dependency file v1.0
+1658429989 source:c:\users\light\onedrive\햞ea de trabalho\estrutura de dados 19_05\trabalhoaed2\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"header.h"
+
+1658427082 c:\users\light\onedrive\햞ea de trabalho\estrutura de dados 19_05\trabalhoaed2\header.h
+
+1658430281 source:c:\users\light\onedrive\햞ea de trabalho\estrutura de dados 19_05\trabalhoaed2\tads.c
+	"header.h"
+	<stdio.h>
+	<string.h>
+	<malloc.h>
+
+1659112790 source:c:\users\light\onedrive\햞ea de trabalho\trampos de prog\estrutura de dados 19_05\trabalhoaed2\tads.c
+	"header.h"
+	<stdio.h>
+	<string.h>
+	<malloc.h>
+
+1659112790 c:\users\light\onedrive\햞ea de trabalho\trampos de prog\estrutura de dados 19_05\trabalhoaed2\header.h
+
+1659112337 source:c:\users\light\onedrive\햞ea de trabalho\trampos de prog\estrutura de dados 19_05\trabalhoaed2\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"header.h"
+
