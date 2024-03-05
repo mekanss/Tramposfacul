@@ -3,6 +3,8 @@
 
 #define MAX 10
 #define MAX_POP 10
+#define MAX_GERACOES 10
+#define MUT_CHANCE 5
 
 
 int ligacoes[MAX][MAX];
@@ -23,6 +25,7 @@ void iniciarVetorAleatoriamente(struct cromossomo *cromossomo) {
         cromossomo->vetor[i] = rand() % MAX; // COLOCA DE 0 A MAX-1 COMO COR!
     }
 }
+
 
 
 
@@ -55,8 +58,86 @@ int calcularFitness(struct cromossomo cromossomo, int ligacoes[MAX][MAX]) {
     return fitness;
 }
 
+// CROSSOVER
+void crossover(struct cromossomo *populacao, int tamanhoPopulacao, int ligacoes[MAX][MAX]) {
+    int i, j;
+    int indice_pai1, indice_pai2;
+
+    // PEGAR 2 PAIS RANDONS QUE NAO SEJAM IGUAIS
+    indice_pai1 = rand() % tamanhoPopulacao;
+    do {
+        indice_pai2 = rand() % tamanhoPopulacao;
+    } while (indice_pai1 == indice_pai2);
+
+    // COMPARA E MANTEM O QUE TEM MENOR FITNESS JA QUE QUEREMOS MINIMIZAR O PROBLEMA (TORNEIO)
+    if (populacao[indice_pai1].fitness > populacao[indice_pai2].fitness) {
+        indice_pai1 = indice_pai2;
+    }
+
+    // QUEREMOS 2 PAIS...
+    for (i = 1; i < tamanhoPopulacao / 2; i++) {
+        do {
+            j = rand() % tamanhoPopulacao;
+        } while (j == indice_pai1 || j == indice_pai2);
+
+        if (populacao[j].fitness < populacao[indice_pai1].fitness) {
+            indice_pai1 = j;
+        }
+    }
+
+    // CRUZAMENTO ALEATORIO, AQUI NO ARTIGO O CARA VERIFICAVA SE O CRUZAMENTO ERA VALIDO, OU SEJA TESTAVA O FITNESS ANTES
+    int pontoCorte = rand() % MAX;
+
+    // CRIANDO 2 CHILDS
+    struct cromossomo filho1, filho2;
+    for (i = 0; i < pontoCorte; i++) {
+        filho1.vetor[i] = populacao[indice_pai1].vetor[i];
+        filho2.vetor[i] = populacao[indice_pai2].vetor[i];
+    }
+    for (i = pontoCorte; i < MAX; i++) {
+        filho1.vetor[i] = populacao[indice_pai2].vetor[i];
+        filho2.vetor[i] = populacao[indice_pai1].vetor[i];
+    }
+
+    // METER RADIAÇÂO NAS CHILDREN (MUTACAO COM MUT_CHANCE)
+    for (i = 0; i < MAX; i++) {
+        if (rand() % 100 < MUT_CHANCE) { // VER SE ROLA MUTACAO
+            if (rand() % 2 == 0 && filho1.vetor[i] < MAX - 1) { // POR FIM 50% DE CHANCE QUE AUMENTA EM 1 O VALOR
+                filho1.vetor[i]++;
+            } else if (filho1.vetor[i] > 0) { // OU DIMINUI EM 1
+                filho1.vetor[i]--;
+            }
+        }
+        if (rand() % 100 < MUT_CHANCE) { // MUTACAO NO SEGUINDO FILHO AGORA, SEPA Q DAVA PRA SER MAIS EFICIENTE
+            if (rand() % 2 == 0 && filho2.vetor[i] < MAX - 1) {
+                filho2.vetor[i]++;
+            } else if (filho2.vetor[i] > 0) {
+                filho2.vetor[i]--;
+            }
+        }
+    }
+
+    // CALCULAR O FIT
+    filho1.fitness = calcularFitness(filho1, ligacoes);
+    filho2.fitness = calcularFitness(filho2, ligacoes);
+
+    // SUBSTITUIR O CARA COM MAIOR FITNESS (O PIOR) PELO MELHOR FILHO
+    int indice_maior_fitness = 0;
+    for (i = 1; i < tamanhoPopulacao; i++) {
+        if (populacao[i].fitness > populacao[indice_maior_fitness].fitness) {
+            indice_maior_fitness = i;
+        }
+    }
+    if (filho1.fitness < filho2.fitness) {
+        populacao[indice_maior_fitness] = filho1;
+    } else {
+        populacao[indice_maior_fitness] = filho2;
+    }
+}
+
 int main() {
     int i, j;
+    int geracoes = 0;
     struct cromossomo cromossomos[MAX_POP];
 
     // ABRIR ARQUIVO E PRINTAR AS COISAS
@@ -109,7 +190,28 @@ int main() {
             printf("%d" ,cromossomos[i].vetor[j]);
         }
         printf(" fitness do cromossomo: %d\n", cromossomos[i].fitness);
+    }
 
+
+    // CRUZAMENTO
+    while (geracoes < MAX_GERACOES)
+    {
+        printf("Geracao: %d\n" ,geracoes+1);
+        // CROSSOVER ROLA MAX/2 VEZES, OU SEJA TEREMOS MAX/2 CHILDREN
+        for (i = 0; i < MAX / 2; i++) {
+            crossover(cromossomos, MAX, ligacoes);
+        }
+
+        printf("Populacao apos crossover:\n");
+        for (i = 0; i < MAX; i++) {
+            printf("Cromossomo: ");
+            for (j = 0; j<MAX; j++)
+            {
+                printf("%d" ,cromossomos[i].vetor[j]);
+            }
+            printf(" - Fitness: %d\n", cromossomos[i].fitness);
+        }
+        geracoes++;
     }
 
     return 0;
