@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define MAX 10
+#define MAX 23 // tamanho da matriz que sera lida do txt
 #define MAX_POP 50
-#define MAX_GERACOES 20
+#define MAX_GERACOES 50
 #define MUT_CHANCE 5
+#define seed 1234
 
 
 int ligacoes[MAX][MAX];
@@ -35,10 +36,10 @@ int calcularFitness(struct cromossomo cromossomo, int ligacoes[MAX][MAX]) {
         }
 
         // COMO É COLORIR MINIMAMENTE, CADA COR NOVA TEM UMA PENALIDADE
-        if (cores[cromossomo.vetor[i]] == 0)
+        if (cores[cromossomo.vetor[i]] != 1)
         {
             cores[cromossomo.vetor[i]] = 1; // AQUI EU COLOCO 1 PARA A COR QUE ESTA NA POSICAO VETOR[I] NO CORES[MAX] OU SEJA, SE EM VETOR[I] TEM UM 3, NA POSICAO CORES[3] AGORA TERA UM 1!
-            fitness += 1; // PUNE EM 2 POR UTILIZAR UMA COR NAO DETECTADA
+            fitness += 1; // PUNE EM 1 POR UTILIZAR UMA COR NAO DETECTADA
         }
     }
 
@@ -121,7 +122,9 @@ void crossover(struct cromossomo *populacao, int tamanhoPopulacao, int ligacoes[
         }
     }
 
-    // CALCULAR O FIT
+    // CALCULAR O FITGraças aos padrões e estratégias usadas nesse algoritmo, um bom resultado foi conseguido, como mostram as próximas imagens (figure 6-10) em famosos grafos, como o myciel3 e myciel4. No caso do primeiro, a execução demorou 0,443 segundos, no segundo 1,443. No entanto, o tempo para achar o ótimo foi menor ainda, visto que não foi a geração final.
+
+Além disso, essa matriz genérica foi utilizada em duas versões: 10x10 e 30x30. Ambas estarão disponíveis no github mencionado.
     filho1.fitness = calcularFitness(filho1, ligacoes);
     filho2.fitness = calcularFitness(filho2, ligacoes);
 
@@ -143,7 +146,7 @@ int main() {
     int i, j;
     int geracoes = 0;
     struct cromossomo cromossomos[MAX_POP];
-    srand(1234);
+    srand(seed);
 
     // ABRIR ARQUIVO E PRINTAR AS COISAS
     FILE *arquivo;
@@ -212,7 +215,7 @@ int main() {
             printf("Cromossomo: ");
             for (j = 0; j<MAX; j++)
             {
-                printf("%d" ,cromossomos[i].vetor[j]);
+                printf("%d " ,cromossomos[i].vetor[j]);
             }
             printf(" - Fitness: %d\n", cromossomos[i].fitness);
         }
