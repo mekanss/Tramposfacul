@@ -13,7 +13,7 @@ features_to_encode = ['Attribute', 'Types', 'Effect types', 'Rarity', 'ATK / DEF
 df_filtered = df.dropna(subset=['Level'])   # Dropar no Y onde o nivel é NaN, ou seja com links e XYZ
 X = df_filtered[features_to_encode]     # Colocando as features que vou encodar
 
-# One-hot encode the categorical features
+# Onehot nas caracteristicas...
 encoder = OneHotEncoder(handle_unknown='ignore')  # Crio o encoder
 encoded_features = encoder.fit_transform(X).toarray()   # Esse to array serve pra resolver um problema que estava tendo, Gemini me deu a call
 encoded_features_df = pd.DataFrame(encoded_features, columns=encoder.get_feature_names_out(X.columns))  # Crio novo dataframe, encodado
