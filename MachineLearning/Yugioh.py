@@ -5,6 +5,8 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import f1_score, confusion_matrix
+from sklearn.model_selection import train_test_split
 
 # Ler o CSV
 df = pd.read_csv("Yugi_db_cleaned.csv")
@@ -13,7 +15,7 @@ features_to_encode = ['Attribute', 'Types', 'Effect types', 'Rarity', 'ATK / DEF
 df_filtered = df.dropna(subset=['Level'])   # Dropar no Y onde o nivel é NaN, ou seja com links e XYZ
 X = df_filtered[features_to_encode]     # Colocando as features que vou encodar
 
-# Onehot nas caracteristicas...
+# One-hot encode the categorical features
 encoder = OneHotEncoder(handle_unknown='ignore')  # Crio o encoder
 encoded_features = encoder.fit_transform(X).toarray()   # Esse to array serve pra resolver um problema que estava tendo, Gemini me deu a call
 encoded_features_df = pd.DataFrame(encoded_features, columns=encoder.get_feature_names_out(X.columns))  # Crio novo dataframe, encodado
@@ -24,6 +26,9 @@ X = pd.concat([encoded_features_df, other_features.reset_index(drop=True)], axis
 
 # Variavel a se descobrir
 y = df_filtered['Level'].values
+
+# Teste e treinamento, 0.2 pra 0.8
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)  
 
 
 param_grid = {
@@ -44,17 +49,34 @@ grid = GridSearchCV(
 
 # Treinamento
 # mod = HistGradientBoostingClassifier()
-grid.fit(X, y)
+grid.fit(X_train, y_train)
 
 # Predição
-predicoes = grid.predict(X)
+predicoes = grid.predict(X_val)
 
+# Matriz de Confusão
+cm = confusion_matrix(y_val, predicoes)
+print("Matriz de Confusão:")
+print(cm)
 
+# f1score
+f1 = f1_score(y_val, predicoes, average='weighted')
 
+# Visualização gráfica da Matriz de Confusão
+plt.figure(figsize=(10,7))
+plt.matshow(cm, cmap=plt.cm.Blues, fignum=1)
+plt.title('Matriz de Confusão')
+plt.colorbar()
+plt.ylabel('Verdadeiro')
+plt.xlabel('Previsão')
+plt.show()
 
 #prints batuta
-print(pd.DataFrame(grid.cv_results_))
+#print(pd.DataFrame(grid.cv_results_))
+print(f1)
 plt.xlabel('Previsao') # dando nome ao eixo X e Y
 plt.ylabel('Verdadeiro')
-plt.scatter(predicoes, y) # criando um plot de previsoes X coisas corretas
+plt.scatter(predicoes, y_val) # criando um plot de previsoes X coisas corretas
 plt.show() # mostrar o plot
+
+### ----------------------------------------------------------------------
