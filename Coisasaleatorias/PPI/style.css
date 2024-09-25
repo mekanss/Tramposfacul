@@ -33,6 +33,11 @@ main
 
 .menu li {
     margin: 0 1rem;
+    padding: 5px;
+}
+
+.menu li:hover{
+    background-color: black;
 }
 
 .menu a {
